@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Animated Glass Form to Google Sheets</title>
+  <style>
+    /* RESET & BASE */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      scroll-behavior: smooth;
+    }
+
+    ::selection {
+      background: #00c9ff;
+      color: #000;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #00c9ff;
+      border-radius: 10px;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    /* CONTAINER */
+    .container {
+      width: 400px;
+      margin: auto;
+      margin-top: 80px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      backdrop-filter: blur(20px);
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 1.5s ease forwards;
+      transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-weight: 600;
+      color: #00eaff;
+      text-shadow: 0 0 10px rgba(0, 233, 255, 0.6);
+    }
+
+    /* FORM ELEMENTS */
+    form input,
+    form textarea {
+      width: 100%;
+      padding: 12px 16px;
+      margin-bottom: 18px;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+
+    form input:focus,
+    form textarea:focus {
+      outline: none;
+      border: 2px solid #00c9ff;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    form textarea {
+      resize: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(to right, #00c9ff, #92fe9d);
+      color: #000;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 255, 255, 0.4);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(0, 255, 255, 0.6);
+    }
+
+    /* TOGGLE */
+    .toggle-link {
+      margin-top: 18px;
+      display: block;
+      text-align: center;
+      color: #00eaff;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 14px;
+      transition: color 0.3s ease;
+    }
+
+    .toggle-link:hover {
+      color: #92fe9d;
+    }
+
+    /* SUCCESS MESSAGE */
+    .success-message {
+      display: none;
+      text-align: center;
+      font-size: 1.1em;
+      padding-top: 10px;
+      animation: fadeIn 1s ease;
+      color: #0f0;
+    }
+
+    /* ADDITIONAL STYLES FOR DEPTH */
+    .container::before {
+      content: "";
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: #00c9ff;
+      border-radius: 50%;
+      top: -60px;
+      right: -60px;
+      z-index: -1;
+      filter: blur(100px);
+      opacity: 0.4;
+    }
+
+    .container::after {
+      content: "";
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      background: #92fe9d;
+      border-radius: 50%;
+      bottom: -40px;
+      left: -40px;
+      z-index: -1;
+      filter: blur(80px);
+      opacity: 0.3;
+    }
+
+    /* TRANSITION FOR CONTAINER */
+    .container.shrink {
+      transform: scale(0.96);
+      opacity: 0.8;
+      filter: blur(2px);
+    }
+
+    /* FAKE LOGIN STYLES */
+    .password-input {
+      font-family: "Courier New", Courier, monospace;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container" id="form-container">
+    <h2 id="form-title">Signup Form</h2>
+
+    <form id="contact-form">
+      <input type="text" name="name" placeholder="Your Name" required />
+      <input type="email" name="email" placeholder="Your Email" required />
+      <textarea name="message" placeholder="Your Message" rows="4" required></textarea>
+      <button type="submit">Send</button>
+    </form>
+
+    <div class="success-message" id="success-message">✅ Sent Successfully! Redirecting...</div>
+    <div class="toggle-link" onclick="toggleForm()">Go to Login</div>
+  </div>
+
+  <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzieNE-3SSzM_DlODgrgtsckNePCQ6_5wFpwoKB0mlrcHCvBtYHTLEGd5PjYPs9_VGj/exec'; // 🔁 Add your Google Apps Script Web App URL
+    const redirectURL = 'AI Chatbot.html';   // 🔁 Add your redirect URL here
+
+    const form = document.getElementById('contact-form');
+    const container = document.getElementById('form-container');
+    const successMsg = document.getElementById('success-message');
+    const formTitle = document.getElementById('form-title');
+    const toggleLink = document.querySelector('.toggle-link');
+
+    let isSignup = true;
+
+    function toggleForm() {
+      isSignup = !isSignup;
+      formTitle.innerText = isSignup ? "Signup Form" : "Login Form";
+      toggleLink.innerText = isSignup ? "Go to Login" : "Go to Signup";
+
+      form.innerHTML = isSignup
+        ? `<input type="text" name="name" placeholder="Your Name" required />
+           <input type="email" name="email" placeholder="Your Email" required />
+           <textarea name="message" placeholder="Your Message" rows="4" required></textarea>
+           <button type="submit">Send</button>`
+        : `<input type="email" name="email" placeholder="Email" required />
+           <input type="password" name="password" placeholder="Password" required class="password-input" />
+           <button type="submit">Login</button>`;
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+
+      if (!isSignup) {
+        alert("🔐 Login submitted (demo only). Redirecting...");
+        container.classList.add('shrink');
+        setTimeout(() => window.location.href = redirectURL, 1600);
+        return;
+      }
+
+      fetch(scriptURL, { method: 'POST', body: formData })
+        .then(() => {
+          successMsg.style.display = 'block';
+          form.style.display = 'none';
+          container.classList.add('shrink');
+          setTimeout(() => window.location.href = redirectURL, 2000);
+        })
+        .catch(error => alert('Error! ' + error.message));
+    });
+  </script>
+
+</body>
+</html>
